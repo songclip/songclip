@@ -1,0 +1,37 @@
+{
+  "name": "songclip",
+  "version": "1.0.0",
+  "description": "Songclip API module for NodeJS",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "mocha test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/audiobyteinc/songclip.git"
+  },
+  "keywords": [
+    "Songclip",
+    "song",
+    "clips",
+    "music",
+    "clips",
+    "music."
+  ],
+  "author": "Songclip (Audiobyte Inc)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/audiobyteinc/songclip/issues"
+  },
+  "homepage": "https://github.com/audiobyteinc/songclip#readme",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "chai": "^4.2.0",
+    "dotenv": "^8.2.0",
+    "mocha": "^7.0.1",
+    "randomstring": "^1.1.5"
+  }
+}
