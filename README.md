@@ -70,6 +70,18 @@ async test() {
    *  } 
    */
 ```
+```
+
+Sample code:
+
+```
+const Songclip = require('songclip')
+
+const songclip = new Songclip({
+  apiKey: process.env.SNGCLP_API_KEY,
+  authorization: `bearer ${process.env.SNGCLP_AUTHORIZATION}`,
+})
+```
 
 ## Search
 
@@ -108,6 +120,18 @@ const songclip = new Songclip({
   apiKey: process.env.SNGCLP_API_KEY,
   authorization: `bearer ${process.env.SNGCLP_AUTHORIZATION}`,
 })
+
+async function test() {
+  const clips = await songclip.search({
+    q: 'hey',
+    limit: 10,
+    page: 1,
+  })
+  console.log(clips)
+}
+
+test()
+
 ```
 
 ## getCollections
