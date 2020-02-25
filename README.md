@@ -71,7 +71,6 @@ async test() {
    *  } 
    */
 ```
-```
 
 Sample code:
 
