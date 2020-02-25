@@ -1,20 +1,12 @@
-FORMAT: 1A
-HOST: http://api.songclip.com/
-
-
-# Songclip API v2.4.4
+# Songclip Library for Songclip API v2.4.4
 [![Audiobyte](https://s3.amazonaws.com/audiobyte-assets/songclip_header_logo.png)](http://gallery.songclip.com)
-The Songclip Music API is a [RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer) API 
-using [JSEND](https://github.com/omniti-labs/jsend) response format for social and digital companies 
+This library uses the Songclip Music API v2.4.4: a [RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer) API 
+with [JSEND](https://github.com/omniti-labs/jsend) response format for social and digital companies 
 to offer fully-licensed popular music as a feature. 
-
-Songclip API v2.4.x is compatible with Audiobyte API v2.3 calls.
-
-[Songclip.com](https://www.songclip.com), is powered by the Songclip API as a showcase of available capabilities for Songclip API partners. 
 
 ## Overview
 
-Songclip shares with its partners this NodeJS module to facilitate its integration. It's an API wrap with the following methods:
+Songclip shares with its partners this NodeJS library module to facilitate its integration. It wraps the Songclip API function calls with a class named "Songclip" with the following member functions:
 
 1. search
 2. getCollections
@@ -24,6 +16,8 @@ Songclip shares with its partners this NodeJS module to facilitate its integrati
 6. postPlayEvent
 7. postShareEvent
 8. postAddEvent
+
+## Usage
 
 `
 $ npm install 'songclip' --save
@@ -42,9 +36,9 @@ async test() {
   try {
     const clips = await songclip.search({
       q: 'Ed Sheeran',
+      minLength: 10, // seconds
       context: {
-        minLength: 10, // seconds
-        uniqueId: 'anoymizedUniqueUserID', //
+        uniqueId: 'anoymizedUniqueUserID',
       },
     })
     const first = clips[0]
@@ -54,6 +48,405 @@ async test() {
 }
 `
 
+# Songclip class
+
+## Constructor
+
+```
+  /**
+   * Configuration settings for all calls.
+   * 
+   * @param {Object} config                Configuration object.
+   * @param {string} config.apiKey         Partner's API key to use Songclip API.
+   * @param {string} config.authorization  Authorization string, for example: 'Bearer asfasdfa...'.
+   * @param {number} config.timeout        Timeout of axios calls in milliseconds, default: 0.
+   * @param {Object} config.proxy          Proxy axios configuration object proxy, for example: {
+   *    host: '127.0.0.1',
+   *    port: 9000,
+   *    auth: {
+   *      username: 'mikeymike',
+   *      password: 'rapunz3l'
+   *    }
+   *  } 
+   */
+```
+
+## Search
+
+```
+  /**
+   * Search for songclips.
+   *
+   * Search for clips with a query string or tags. Optional: minLength & maxLength, shuffle, page and limit
+   *
+   * @link https://songclip.docs.apiary.io/#reference/0/songclip-audio-files/search-songclip-audio-files
+   *
+   * @param {Object} params                 Parameters for call
+   * @param {string} params.q               Query string to search (either "q" and/or "context.tags" must be provided)
+   * @param {number} params.limit           Max. number of elements to be retrieved (default: 20)
+   * @param {number} params.page            Page (default: 1)
+   * @param {boolean} params.shuffle        Shuffle contents in current page (default: false)
+   * @param {number} params.minLength       Minimum length in seconds (including value provided, default: 0)
+   * @param {number} params.maxLength       Max length in seconds (included value provided, default: infinite)
+   * @param {Object} params.context         Context for call
+   * @param {string} params.sourcePlatform  Source platform, default 'web', other: 'iOS', 'Android', etc.
+   * @param {string} params.uniqueId        Anonimized ID for user, to keep context for future calls. If not set, one is generated.
+   * @param {string} params.sessionId       ID for current session (identifier to group calls done from a user in a period of time defined by partner) 
+   *                                        If not set, will use one coming from the first response.
+   * @param {Array of String} params.tags   Tags to match search, for example: ['love', 'flirt']
+   *
+   * @return {Array} Clips (each clip is an object with: id, artist, title, lyrics[if available], coverUrl, audioUrl and duration) found.
+   */
+```
+
+Sample code:
+
+```
+const Songclip = require('songclip')
+
+const songclip = new Songclip({
+  apiKey: process.env.SNGCLP_API_KEY,
+  authorization: `bearer ${process.env.SNGCLP_AUTHORIZATION}`,
+})
+```
+
+## getCollections
+
+```
+ /**
+   * Get all available collections.
+   *
+   * Get collections curated for corresponding partner. Each collection has an object with the following
+   * fields: {term, color, backgroundGifUrl, backgroundWebpUrl}
+   *
+   * @link https://songclip.docs.apiary.io/#reference/0/songclip-audio-files/list-songclips-collections
+   *
+   * @param {Object} params                 Parameters for call
+   * @param {Object} params.context         Context for call
+   * @param {string} params.sourcePlatform  Source platform, default 'web', other: 'iOS', 'Android', etc.
+   * @param {string} params.uniqueId        Anonimized ID for user, to keep context for future calls. If not set, one is generated.
+   * @param {string} params.sessionId       ID for current session (identifier to group calls done from a user in a period of time defined by partner) 
+   *                                        If not set, will use one coming from the first response.
+   * @param {minLength}
+   *
+   * @return {Array} collections, each with {term, color, backgroundGifUrl, backgroundWebpUrl}
+   */
+```
+
+Sample code:
+
+```
+const Songclip = require('songclip')
+
+const songclip = new Songclip({
+  apiKey: process.env.SNGCLP_API_KEY,
+  authorization: `bearer ${process.env.SNGCLP_AUTHORIZATION}`,
+})
+
+async function test() {
+  const limit = 5
+  const collections = await songclip.getCollections()
+  for (const collection of collections) {
+    const { term } = collection
+    const clips = await songclip.getCollection({
+      term,
+      limit,
+    })
+    console.log('term', term, 'clips', clips)
+  }
+}
+
+test()
+```
+
+## getCollection
+
+```
+  /**
+   * Retrieve clips from collection identified by 'term'.
+   *
+   * Get clips for given collection identified by 'term'. Optional: minLength & maxLength, shuffle, page and limit
+   *
+   * @link https://songclip.docs.apiary.io/#reference/0/songclip-audio-files/search-songclip-audio-files
+   *
+   * @param {Object} params                 Parameters for call
+   * @param {string} params.term            Identifier for collection, default 'trending'
+   * @param {number} params.limit           Max. number of elements to be retrieved (default: 20)
+   * @param {number} params.page            Page (default: 1)
+   * @param {boolean} params.shuffle        Shuffle contents in current page (default: false)
+   * @param {number} params.minLength       Minimum length in seconds (including value provided, default: 0)
+   * @param {number} params.maxLength       Max length in seconds (included value provided, default: infinite)
+   * @param {Object} params.context         Context for call
+   * @param {string} params.sourcePlatform  Source platform, default 'web', other: 'iOS', 'Android', etc.
+   * @param {string} params.uniqueId        Anonimized ID for user, to keep context for future calls. If not set, one is generated.
+   * @param {string} params.sessionId       ID for current session (identifier to group calls done from a user in a period of time defined by partner) 
+   *                                        If not set, will use one coming from the first response.
+   * @param {Array of String} params.tags   Tags to match search, for example: ['love', 'flirt']
+   *
+   * @return {Array} Clips (each clip is an object with: id, artist, title, lyrics[if available], coverUrl, audioUrl and duration) found.
+   */
+```
+
+Sample code:
+
+```
+const Songclip = require('songclip')
+
+const songclip = new Songclip({
+  apiKey: process.env.SNGCLP_API_KEY,
+  authorization: `bearer ${process.env.SNGCLP_AUTHORIZATION}`,
+})
+
+async function test() {
+  const limit = 5
+  const collections = await songclip.getCollections()
+  for (const collection of collections) {
+    const { term } = collection
+    const clips = await songclip.getCollection({
+      term,
+      limit,
+    })
+    console.log('term', term, 'clips', clips)
+  }
+}
+
+test()
+```
+
+## getRelated
+
+```
+  /**
+   * Search for songclips related to given clip (identified by id).
+   *
+   * Search for clips related to a given clip (identified by id)
+   *
+   * @link https://songclip.docs.apiary.io/#reference/0/songclip-audio-files/related-songclip-audio-files-for-songclip-audio-file
+   *
+   * @param {Object} params                 Parameters for call
+   * @param {string} params.id              Clip ID to find related clips for (Mandatory)
+   * @param {number} params.limit           Max. number of elements to be retrieved (default: 20)
+   * @param {number} params.page            Page (default: 1)
+   * @param {boolean} params.shuffle        Shuffle contents in current page (default: false)
+   * @param {number} params.minLength       Minimum length in seconds (including value provided, default: 0)
+   * @param {number} params.maxLength       Max length in seconds (included value provided, default: infinite)
+   * @param {Object} params.context         Context for call
+   * @param {string} params.sourcePlatform  Source platform, default 'web', other: 'iOS', 'Android', etc.
+   * @param {string} params.uniqueId        Anonimized ID for user, to keep context for future calls. If not set, one is generated.
+   * @param {string} params.sessionId       ID for current session (identifier to group calls done from a user in a period of time defined by partner) 
+   *                                        If not set, will use one coming from the first response.
+   * @param {Array of String} params.tags   Tags to match search, for example: ['love', 'flirt']
+   *
+   * @return {Array} Related clips found (each clip is an object with: id, artist, title, lyrics[if available], coverUrl, audioUrl and duration).
+   */
+```
+
+Sample code:
+
+```
+const Songclip = require('songclip')
+
+const songclip = new Songclip({
+  apiKey: process.env.SNGCLP_API_KEY,
+  authorization: `bearer ${process.env.SNGCLP_AUTHORIZATION}`,
+})
+
+async function test() {
+  const limit = 5
+  const clips = await songclip.getCollection({ limit: 1 }) // trending
+  const clip = clips[0]
+
+  const relatedClips = await songclip.getRelated({
+    id: clip.id,
+    limit,
+  })
+  console.log('Related clips', clips)
+}
+
+test()
+```
+
+## postAppOpenEvent
+
+```
+  /**
+   * Sends an open "App" event.
+   *
+   * Sends an open "App" event when the "Songclip" content is first used in the user's session.
+   * It is usually related to a button that enables the songclip content to be surfaced in the current user's session.
+   *
+   * @link https://songclip.docs.apiary.io/#reference/0/events/send-app-open-event
+   *
+   * @param {Object} params.context         Context for call
+   * @param {string} params.sourcePlatform  Source platform, default 'web', other: 'iOS', 'Android', etc.
+   * @param {string} params.uniqueId        Anonimized ID for user, to keep context for future calls. If not set, one is generated.
+   * @param {string} params.sessionId       ID for current session (identifier to group calls done from a user in a period of time defined by partner) 
+   *                                        If not set, will use one coming from the first response.
+   * @return {Object|boolean} response object { status: string } or false if unsuccessful call, status = 'success' if call is OK
+   */
+```
+
+Sample code:
+
+```
+const Songclip = require('songclip')
+
+const songclip = new Songclip({
+  apiKey: process.env.SNGCLP_API_KEY,
+  authorization: `bearer ${process.env.SNGCLP_AUTHORIZATION}`,
+})
+
+async function test() {
+  const { status } = await songclip.postAppOpen()
+  if (status === 'success' ) {
+    // ...
+  }
+}
+
+test()
+```
+
+## postPlayEvent
+
+```
+  /**
+   * Sends a play clip/gifnote (identified by ID) event.
+   *
+   * POSTs a play event for clip/gifnote (identified by ID). It is used for music reporting services to Labels/Publishers/PRO.
+   *
+   * @link https://songclip.docs.apiary.io/#reference/0/songclip-audio-files/send-a-songclip-audio-file-play-event
+   * @link https://songclip.docs.apiary.io/#reference/0/songclip-gif-videos/send-a-songclip-gif-video-play-event
+   *
+   * @param {Object} params                 Parameters for call
+   * @param {Number} params.id              Clip/Gifnote identifier
+   * @param {string} params.assetType       Type of asset ('songclip' or 'gifnote'). Default is 'songclip'
+   * @param {Object} params.context         Context for call
+   * @param {string} params.sourcePlatform  Source platform, default 'web', other: 'iOS', 'Android', etc.
+   * @param {string} params.uniqueId        Anonimized ID for user, to keep context for future calls. If not set, one is generated.
+   * @param {string} params.sessionId       ID for current session (identifier to group calls done from a user in a period of time defined by partner) 
+   *                                        If not set, will use one coming from the first response.
+   * @return {Object|boolean} response object { status: string } or false if unsuccessful call, status = 'success' if call is OK
+   */
+```
+
+Sample code:
+
+```
+const Songclip = require('songclip')
+
+const songclip = new Songclip({
+  apiKey: process.env.SNGCLP_API_KEY,
+  authorization: `bearer ${process.env.SNGCLP_AUTHORIZATION}`,
+})
+
+async function test() {
+  const clips = await songclip.getCollection({ limit: 1 }) // trending
+  const clip = clips[0]
+
+  const { status } = await songclip.postPlayEvent({ id: clip.id })
+  if (status === 'success' ) {
+    // ...
+  }
+}
+
+test()
+```
+
+## postShareEvent
+
+```
+  /**
+   * Sends a share clip/gifnote (identified by ID) event.
+   *
+   * POSTs a share event for clip/gifnote (identified by ID). It is used for music reporting services to Labels/Publishers/PRO.
+   *
+   * @link https://songclip.docs.apiary.io/#reference/0/songclip-audio-files/send-a-songclip-audio-file-share-event
+   * @link https://songclip.docs.apiary.io/#reference/0/songclip-gif-videos/send-a-songclip-gif-video-share-event
+   *
+   * @param {Object} params                 Parameters for call
+   * @param {Number} params.id              Clip/Gifnote identifier
+   * @param {string} params.assetType       Type of asset ('songclip' or 'gifnote'). Default is 'songclip'
+   * @param {Object} params.context         Context for call
+   * @param {string} params.sourcePlatform  Source platform, default 'web', other: 'iOS', 'Android', etc.
+   * @param {string} params.uniqueId        Anonimized ID for user, to keep context for future calls. If not set, one is generated.
+   * @param {string} params.sessionId       ID for current session (identifier to group calls done from a user in a period of time defined by partner) 
+   *                                        If not set, will use one coming from the first response.
+   * @return {Object|boolean} response object { status: string } or false if unsuccessful call, status = 'success' if call is OK
+   */
+```
+
+Sample code:
+
+```
+const Songclip = require('songclip')
+
+const songclip = new Songclip({
+  apiKey: process.env.SNGCLP_API_KEY,
+  authorization: `bearer ${process.env.SNGCLP_AUTHORIZATION}`,
+})
+
+async function test() {
+  const clips = await songclip.getCollection({ limit: 1 }) // trending
+  const clip = clips[0]
+
+  const { status } = await songclip.postShareEvent({ id: clip.id })
+  if (status === 'success' ) {
+    // ...
+  }
+}
+
+test()
+```
+
+## postAddEvent
+
+```
+  /**
+   * Sends an Add clip (identified by ID) event.
+   *
+   * POSTs an add event for given clip (identified by ID). It is used to notify that the user is actually merging the content into 
+   * some other type of asset. It is used for music reporting services to Labels/Publishers/PRO.
+   *
+   * @link https://songclip.docs.apiary.io/#reference/0/songclip-audio-files/send-a-songclip-audio-file-add-event
+   *
+   * @param {Object} params                 Parameters for call
+   * @param {Number} params.id              Clip identifier
+   * @param {string} params.assetType       Type of asset ('songclip' or 'gifnote'). Default is 'songclip' (not implemented for 'gifnote' in Songclip API v2.4.4)
+   * @param {Object} params.context         Context for call
+   * @param {string} params.sourcePlatform  Source platform, default 'web', other: 'iOS', 'Android', etc.
+   * @param {string} params.uniqueId        Anonimized ID for user, to keep context for future calls. If not set, one is generated.
+   * @param {string} params.sessionId       ID for current session (identifier to group calls done from a user in a period of time defined by partner) 
+   *                                        If not set, will use one coming from the first response.
+   * @return {Object|boolean} response object { status: string } or false if unsuccessful call, status = 'success' if call is OK
+   */
+```
+
+Sample code:
+
+```
+const Songclip = require('songclip')
+
+const songclip = new Songclip({
+  apiKey: process.env.SNGCLP_API_KEY,
+  authorization: `bearer ${process.env.SNGCLP_AUTHORIZATION}`,
+})
+
+async function test() {
+  const clips = await songclip.getCollection({ limit: 1 }) // trending
+  const clip = clips[0]
+
+  const { status } = await songclip.postAddEvent({ id: clip.id })
+  if (status === 'success' ) {
+    // ...
+  }
+}
+
+test()
+```
+
+# Songclip API v2.4.4
+
+This library uses the Songclip API v2.4.4 which is defined as follows.
 
 ## Introduction to full API
 
