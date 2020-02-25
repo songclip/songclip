@@ -19,13 +19,14 @@ Songclip shares with its partners this NodeJS library module to facilitate its i
 
 ## Usage
 
-`
+```
 $ npm install 'songclip' --save
-`
+```
 
 Sample code:
 
-`
+
+```
 const Songclip = require('songclip')
 const songclip = new Songclip({
   apiKey: 'APS...',
@@ -46,7 +47,7 @@ async test() {
     console.error(error)
   }
 }
-`
+```
 
 # Songclip class
 
