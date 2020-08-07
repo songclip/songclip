@@ -80,6 +80,19 @@ describe('post a app open event', function () {
     expect(status).to.be.eql('success')
   })
 
+  it(`should return two different sessionids with two app open events`, async () => {
+    let res = await songclip.postAppOpen()
+    
+    expect(res.status).to.be.eql('success')
+    let firstSessionId = res.data.context.sessionId
+
+    res = await songclip.postAppOpen()
+    let secondSessionId = res.data.context.sessionId
+    
+    expect(firstSessionId).to.not.be.eql(secondSessionId)
+
+  })
+
 })
 
 describe('post a play event', function () {
@@ -123,3 +136,5 @@ describe('post a add event', function () {
   })
 
 })
+
+
